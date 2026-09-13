@@ -1,0 +1,24 @@
+name: Revenue Router Trigger
+
+on:
+  push:
+    paths:
+      - '.github/workflows/revenue-router-trigger.yml'
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Trigger immediate revenue scan
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://global-revenue-router-l5pniy.v2.appdeploy.ai'
+          echo 'Triggering revenue router...'
+          curl --fail-with-body --silent --show-error --max-time 240 -X POST "$URL/api/run" -H 'content-type: application/json' -d '{}' | tee /tmp/run.json
+          echo
+          echo 'Redacted current status:'
+          curl --fail-with-body --silent --show-error --max-time 30 "$URL/api/status" | tee /tmp/status.json
+          echo
