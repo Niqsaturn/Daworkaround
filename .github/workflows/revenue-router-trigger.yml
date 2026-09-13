@@ -22,3 +22,4 @@ jobs:
           echo 'Redacted current status:'
           curl --fail-with-body --silent --show-error --max-time 30 "$URL/api/status" | tee /tmp/status.json
           echo
+# trigger-2
