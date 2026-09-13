@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/ckpool-probe.yml'
       - 'probe.mjs'
+      - 'live-job-proof.mjs'
   workflow_dispatch:
 
 jobs:
@@ -23,14 +24,22 @@ jobs:
           set -o pipefail
           echo '=== DNS endpoint ==='
           if POOL_HOST=uesolo.ckpool.org POOL_PORT=3333 WORKER_NAME=ghprobe PROBE_TIMEOUT_MS=20000 node probe.mjs 2>&1 | tee ckpool-probe.log; then
-            exit 0
+            true
+          else
+            echo '=== DNS endpoint failed; direct IPv4 fallback ===' | tee -a ckpool-probe.log
+            POOL_HOST=51.81.56.15 POOL_PORT=3333 WORKER_NAME=ghprobe-ip PROBE_TIMEOUT_MS=20000 node probe.mjs 2>&1 | tee -a ckpool-probe.log
           fi
-          echo '=== DNS endpoint failed; direct IPv4 fallback ===' | tee -a ckpool-probe.log
-          POOL_HOST=51.81.56.15 POOL_PORT=3333 WORKER_NAME=ghprobe-ip PROBE_TIMEOUT_MS=20000 node probe.mjs 2>&1 | tee -a ckpool-probe.log
-      - name: Upload probe transcript
+      - name: Build exact live-job proof
+        shell: bash
+        run: |
+          set -o pipefail
+          POOL_HOST=uesolo.ckpool.org POOL_PORT=3333 WORKER_NAME=ghproof PROBE_TIMEOUT_MS=20000 node live-job-proof.mjs 2>&1 | tee live-job-proof.log
+      - name: Upload transcripts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ckpool-probe-transcript
-          path: ckpool-probe.log
+          name: ckpool-live-proof
+          path: |
+            ckpool-probe.log
+            live-job-proof.log
           retention-days: 1
