@@ -1,0 +1,43 @@
+name: CKPool Command Bridge
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: read
+
+env:
+  POOL_HOST: uesolo.ckpool.org
+  POOL_PORT: '3333'
+  PROBE_TIMEOUT_MS: '20000'
+
+jobs:
+  proof:
+    if: >-
+      github.event.issue.number == 1 &&
+      github.event.comment.user.login == 'Niqsaturn' &&
+      startsWith(github.event.comment.body, '/ckpool-proof')
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Execute allow-listed live Stratum proof
+        env:
+          WORKER_NAME: issuebridge
+        run: |
+          set -o pipefail
+          echo "CONTROL_COMMENT_ID=${{ github.event.comment.id }}"
+          echo "CONTROL_ACTOR=${{ github.event.comment.user.login }}"
+          node live-job-proof.mjs 2>&1 | tee live-job-proof.log
+      - name: Upload proof transcript
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ckpool-command-proof-${{ github.run_id }}
+          path: live-job-proof.log
+          retention-days: 1
