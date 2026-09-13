@@ -1,0 +1,36 @@
+name: CKPool Socket Probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ckpool-probe.yml'
+      - 'probe.mjs'
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Probe CKPool Stratum
+        shell: bash
+        run: |
+          set -o pipefail
+          echo '=== DNS endpoint ==='
+          if POOL_HOST=uesolo.ckpool.org POOL_PORT=3333 WORKER_NAME=ghprobe PROBE_TIMEOUT_MS=20000 node probe.mjs 2>&1 | tee ckpool-probe.log; then
+            exit 0
+          fi
+          echo '=== DNS endpoint failed; direct IPv4 fallback ===' | tee -a ckpool-probe.log
+          POOL_HOST=51.81.56.15 POOL_PORT=3333 WORKER_NAME=ghprobe-ip PROBE_TIMEOUT_MS=20000 node probe.mjs 2>&1 | tee -a ckpool-probe.log
+      - name: Upload probe transcript
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ckpool-probe-transcript
+          path: ckpool-probe.log
+          retention-days: 1
