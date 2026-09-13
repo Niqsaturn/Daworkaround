@@ -1,0 +1,15 @@
+{
+  "name": "ckpool-http-bridge",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Auto-reconnecting persistent HTTP/JSON to CKPool Stratum V1 bridge",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "probe": "node src/probe.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
