@@ -1,0 +1,17 @@
+{
+  "name": "t3n-funded-opportunity-trust-agent",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A Terminal 3-backed trust gate for autonomous revenue opportunities.",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "check": "node --check src/server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@terminal3/t3n-sdk": "3.9.0"
+  }
+}
